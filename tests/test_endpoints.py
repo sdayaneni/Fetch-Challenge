@@ -1,6 +1,7 @@
 import pytest
 from src import create_app
-from src.models import db, Balance
+from src.models import db, Balance, APIKey
+import secrets
 
 @pytest.fixture
 def client():
@@ -12,17 +13,31 @@ def client():
         with app.app_context():
             #Set up DB
             db.create_all()
-            yield client
+            #Generate an API key for testing
+            api_key = secrets.token_hex(32)
+            new_key = APIKey(key=api_key)
+            db.session.add(new_key)
+            db.session.commit()
+
+            #Yield the client and API key for use in tests
+            yield client, api_key  
             db.session.remove()
             db.drop_all()
 
 #Test basic add endpoint functionality
 def test_add_points(client):
+    client, api_key = client
+
+    headers = {
+        'Authorization': api_key
+    }
+
     response = client.post('/add', json={
         "payer": "DANNON",
         "points": 300,
         "timestamp": "2022-10-31T10:00:00Z"
-    })
+    }, headers = headers)
+
     assert response.status_code == 200
     assert response.json["message"] == "Points added successfully"
 
@@ -33,11 +48,17 @@ def test_add_points(client):
 
 #Test basic spend endpoint functionality
 def test_spend_points(client):
-    client.post('/add', json={"payer": "DANNON", "points": 300, "timestamp": "2022-10-31T10:00:00Z"})
-    client.post('/add', json={"payer": "UNILEVER", "points": 200, "timestamp": "2022-10-31T11:00:00Z"})
-    client.post('/add', json={"payer": "DANNON", "points": -200, "timestamp": "2022-10-31T15:00:00Z"})
+    client, api_key = client
+
+    headers = {
+        'Authorization': api_key
+    }
     
-    response = client.post('/spend', json={"points": 100})
+    client.post('/add', json={"payer": "DANNON", "points": 300, "timestamp": "2022-10-31T10:00:00Z"}, headers = headers)
+    client.post('/add', json={"payer": "UNILEVER", "points": 200, "timestamp": "2022-10-31T11:00:00Z"}, headers = headers)
+    client.post('/add', json={"payer": "DANNON", "points": -200, "timestamp": "2022-10-31T15:00:00Z"}, headers = headers)
+    
+    response = client.post('/spend', json={"points": 100}, headers = headers)
     assert response.status_code == 200
     assert response.json["message"] == "Points spent successfully"
 
@@ -50,10 +71,16 @@ def test_spend_points(client):
 
 #Test basic balance endpoint functionality
 def test_get_balance(client):
-    client.post('/add', json={"payer": "DANNON", "points": 300, "timestamp": "2022-10-31T10:00:00Z"})
-    client.post('/add', json={"payer": "UNILEVER", "points": 200, "timestamp": "2022-10-31T11:00:00Z"})
+    client, api_key = client
+
+    headers = {
+        'Authorization': api_key
+    }
+
+    client.post('/add', json={"payer": "DANNON", "points": 300, "timestamp": "2022-10-31T10:00:00Z"}, headers = headers)
+    client.post('/add', json={"payer": "UNILEVER", "points": 200, "timestamp": "2022-10-31T11:00:00Z"}, headers = headers)
     
-    response = client.get('/balance')
+    response = client.get('/balance', headers = headers)
     assert response.status_code == 200
     assert response.json == {
         "DANNON": 300,
@@ -62,6 +89,12 @@ def test_get_balance(client):
 
 #Cumulative test with all 3 endpoints (provided in instructions document)
 def test_provided_case(client):
+    client, api_key = client
+
+    headers = {
+        'Authorization': api_key
+    }
+
     #1. Add Transactions
     transactions = [
         { "payer": "DANNON", "points": 300, "timestamp": "2022-10-31T10:00:00Z" },
@@ -72,17 +105,17 @@ def test_provided_case(client):
     ]
 
     for transaction in transactions:
-        response = client.post('/add', json=transaction)
+        response = client.post('/add', json=transaction, headers = headers)
         assert response.status_code == 200
         assert response.json["message"] == "Points added successfully"
 
     #2. Spend
-    spend_response = client.post('/spend', json={ "points": 5000 })
+    spend_response = client.post('/spend', json={ "points": 5000 }, headers = headers)
     assert spend_response.status_code == 200
     assert spend_response.json["message"] == "Points spent successfully"
 
     #3. Check Balances
-    balance_response = client.get('/balance')
+    balance_response = client.get('/balance', headers = headers)
     assert balance_response.status_code == 200
     assert balance_response.json == {
         "DANNON": 1000,

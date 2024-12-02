@@ -1,11 +1,30 @@
 from flask import Blueprint, request, jsonify
-from src.models import db, Transaction, Balance
+from src.models import db, Transaction, Balance, APIKey
+from src.auth import require_api_key
+import secrets
 
-#Create a blueprint for modularity
 routes = Blueprint('routes', __name__)
+
+#Endpoint to generate new API keys
+@routes.post('/register')
+def generate_api_key():
+    api_key = secrets.token_hex(32)
+
+    #Store API key in the database
+    try:
+        new_key = APIKey(key=api_key)
+        db.session.add(new_key)
+        db.session.commit()
+
+        return jsonify({"message": "API key generated successfully", "api_key": api_key}), 201
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({"error": str(e)}), 500
+    
 
 #Endpoint for adding points
 @routes.post('/add')
+@require_api_key 
 def add_points():
     data = request.get_json()
     
@@ -44,6 +63,7 @@ def add_points():
 
 #Endpoint for spending points
 @routes.post('/spend')
+@require_api_key 
 def spend_points():
     data = request.get_json()
     
@@ -104,6 +124,7 @@ def spend_points():
 
 #Endpoint for returning balance
 @routes.get('/balance')
+@require_api_key
 def get_balance():
     try:
         #Query the balances table to get all payers and their points

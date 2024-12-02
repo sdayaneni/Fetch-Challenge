@@ -1,0 +1,166 @@
+{
+    "swagger": "2.0",
+    "info": {
+      "version": "1.0.0",
+      "title": "Points Management API",
+      "description": "API for managing points transactions with API key authentication."
+    },
+    "host": "localhost:8000",
+    "basePath": "/",
+    "schemes": ["http"],
+    "securityDefinitions": {
+      "ApiKeyAuth": {
+        "type": "apiKey",
+        "in": "header",
+        "name": "Authorization",
+        "description": "API Key needed to access this endpoint"
+      }
+    },
+    "tags": [
+      {
+        "name": "API Key Management",
+        "description": "Endpoints for managing API keys"
+      },
+      {
+        "name": "Transactions",
+        "description": "Endpoints for adding and spending points"
+      },
+      {
+        "name": "Balances",
+        "description": "Endpoints for retrieving payer balances"
+      }
+    ],
+    "paths": {
+      "/register": {
+        "post": {
+          "tags": ["API Key Management"],
+          "summary": "Generate a new API key",
+          "description": "This endpoint generates a new API key and stores it in the database.",
+          "responses": {
+            "201": {
+              "description": "API key generated successfully",
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "message": {
+                    "type": "string",
+                    "description": "Success message"
+                  },
+                  "api_key": {
+                    "type": "string",
+                    "description": "The newly generated API key"
+                  }
+                }
+              }
+            },
+            "500": {
+              "description": "Internal server error"
+            }
+          }
+        }
+      },
+      "/add": {
+        "post": {
+          "tags": ["Transactions"],
+          "security": [{"ApiKeyAuth": []}],
+          "summary": "Add points to a payer's account",
+          "description": "This endpoint adds points to a payer's account.",
+          "parameters": [
+            {
+              "in": "body",
+              "name": "body",
+              "required": true,
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "payer": {
+                    "type": "string",
+                    "description": "The name of the payer"
+                  },
+                  "points": {
+                    "type": "integer",
+                    "description": "The number of points to add (positive or negative)"
+                  },
+                  "timestamp": {
+                    "type": "string",
+                    "description": "Timestamp of the transaction"
+                  }
+                },
+                "required": ["payer", "points", "timestamp"]
+              }
+            }
+          ],
+          "responses": {
+            "200": {
+              "description": "Points added successfully"
+            },
+            "400": {
+              "description": "Invalid input"
+            },
+            "500": {
+              "description": "Internal server error"
+            }
+          }
+        }
+      },
+      "/spend": {
+        "post": {
+          "tags": ["Transactions"],
+          "security": [{"ApiKeyAuth": []}],
+          "summary": "Spend points from a payer's account",
+          "description": "This endpoint spends points from the payer's account based on the oldest transaction.",
+          "parameters": [
+            {
+              "in": "body",
+              "name": "body",
+              "required": true,
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "points": {
+                    "type": "integer",
+                    "description": "The number of points to spend"
+                  }
+                },
+                "required": ["points"]
+              }
+            }
+          ],
+          "responses": {
+            "200": {
+              "description": "Points spent successfully"
+            },
+            "400": {
+              "description": "Invalid input or not enough points"
+            },
+            "500": {
+              "description": "Internal server error"
+            }
+          }
+        }
+      },
+      "/balance": {
+        "get": {
+          "tags": ["Balances"],
+          "security": [{"ApiKeyAuth": []}],
+          "summary": "Get the current balance of all payers",
+          "description": "This endpoint retrieves the balance of all payers.",
+          "responses": {
+            "200": {
+              "description": "The balance of all payers",
+              "schema": {
+                "type": "object",
+                "additionalProperties": {
+                  "type": "integer",
+                  "description": "Points balance of the payer"
+                }
+              }
+            },
+            "500": {
+              "description": "Internal server error"
+            }
+          }
+        }
+      }
+    }
+  }  
