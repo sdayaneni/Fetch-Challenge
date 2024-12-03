@@ -25,10 +25,10 @@ This project is a Flask REST API used to keep track of and make transactions wit
   python3 app.py
   ```
 
-3. **Access the Application**:
+3. **Open Application**:
 Open a browser and open  `http://localhost:8000` to view information and access endpoints.
 
-### To Run with Docker
+### To Run with Docker:
 
 1. **Make Docker Image**:
    ```bash
@@ -38,5 +38,5 @@ Open a browser and open  `http://localhost:8000` to view information and access 
   ```bash
   docker run -p 8000:8000 points-api
   ```
-3. **Access Application**:
+3. **Open Application**:
 Open a browser and open  `http://localhost:8000` to view information and access endpoints.
