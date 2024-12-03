@@ -1,9 +1,14 @@
-from flask import Blueprint, request, jsonify
+from flask import Blueprint, request, jsonify, render_template
 from src.models import db, Transaction, Balance, APIKey
 from src.auth import require_api_key
 import secrets
 
 routes = Blueprint('routes', __name__)
+
+#Display UI
+@routes.route('/')
+def index():
+    return render_template('index.html')
 
 #Endpoint to generate new API keys
 @routes.post('/register')

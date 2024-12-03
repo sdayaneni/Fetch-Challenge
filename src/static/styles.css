@@ -1,0 +1,29 @@
+@import url('https://fonts.googleapis.com/css2?family=Oswald&display=swap');
+
+body {
+    font-family: Arial, sans-serif;
+    margin: 20px;
+    padding: 0;
+    background-color: #1a1a1a;
+    color: white;
+    align-items: center;
+    height: 100vh
+}
+
+h1{
+    font-family: 'Oswald', sans-serif;
+    font-size: 60px;
+    text-align: center;
+    color: #fff;
+} 
+
+p{
+    font-family: 'Oswald', sans-serif;
+    font-size: 30px;
+    text-align: center;
+    color: #fff;
+} 
+
+.swagger-button:hover {
+    background-color: #a49c9c;
+}
