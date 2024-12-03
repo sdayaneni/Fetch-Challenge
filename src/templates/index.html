@@ -8,9 +8,110 @@
 </head>
 <body>
     <h1>Points Management API</h1>
-    <p>To view documentation and make API calls, click 
+    <p>To view documentation click 
         <a href="/swagger" class="swagger-button">here</a>
     </p>
+
+    <div id = "key-section">
+        <button id = "key-button" type="button" onclick="getKey()">Get API Key</button>
+        <div id="key-result"></div>
+    </div>
+
+    <div class = "api-container">
+        <div class = "endpoint">
+            <h2 class="form-title">Add Points</h2>
+            <form id="add-form" class="api-form">
+                <label for="payer">Payer:</label>
+                <input type="text" id="payer" name="payer" required>
+                <label for="points">Points:</label>
+                <input type="number" id="points" name="points" required>
+                <label for="timestamp">Timestamp:</label>
+                <input type="datetime-local" id="timestamp" name="timestamp" required>
+                <button type="button" onclick="addPoints()">Submit</button>
+            </form>
+            <div id="add-result" class="result-box"></div>
+        </div>
+
+        <div class = "endpoint">
+            <h2 class="form-title">Spend Points</h2>
+            <form id="spend-form" class="api-form">
+                <label for="spend-points">Points to Spend:</label>
+                <input type="number" id="spend-points" name="points" required>
+                <button type="button" onclick="spendPoints()">Submit</button>
+            </form>
+            <div id="spend-result" class="result-box"></div>
+        </div>
+
+        <div class = "endpoint">
+            <h2 class="form-title">Get Balance</h2>
+            <button id = "balance-button" type="button" onclick="getBalance()">Submit</button>
+            <div id="balance-result" class="result-box"></div>
+        </div>
+    </div>
+
+    <script>
+        let apiKey = "";
+
+
+        async function addPoints() {
+            const data = {
+                payer: document.getElementById("payer").value,
+                points: parseInt(document.getElementById("points").value),
+                timestamp: document.getElementById("timestamp").value
+            };
+
+            const response = await fetch('/add', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': apiKey
+                },
+                body: JSON.stringify(data)
+            });
+
+            const result = await response.json();
+            document.getElementById("add-result").innerText = JSON.stringify(result.message, null, 2);
+        }
+
+        async function spendPoints() {
+            const data = {
+                points: parseInt(document.getElementById("spend-points").value)
+            };
+
+            const response = await fetch('/spend', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': apiKey
+                },
+                body: JSON.stringify(data)
+            });
+
+            const result = await response.json();
+            document.getElementById("spend-result").innerText = JSON.stringify(result.message, null, 2);
+        }
+
+        async function getBalance() {
+            const response = await fetch('/balance', {
+                method: 'GET',
+                headers: {
+                    'Authorization': apiKey
+                }
+            });
+
+            const result = await response.json();
+            document.getElementById("balance-result").innerText = JSON.stringify(result, null, 2);
+        }
+
+        async function getKey() {
+            const response = await fetch('/register', {
+                method: 'POST',
+            });
+            const result = await response.json();
+            apiKey = result.api_key;
+            document.getElementById("key-result").innerText = "Key: " + JSON.stringify(result.api_key, null, 2);
+        }
+    </script>
     
 </body>
 </html>
