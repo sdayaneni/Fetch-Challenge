@@ -86,6 +86,9 @@ def spend_points():
     #Sort transactions by timestamp
     transactions = Transaction.query.order_by(Transaction.timestamp.asc()).all()
 
+    #List to display in response body
+    spent_points = []
+
     try:
         for transaction in transactions:
             if points_to_spend <= 0:
@@ -110,6 +113,14 @@ def spend_points():
             #Update the payer's balance in the balance table
             if balance:
                 balance.points -= points_to_deduct
+        
+            # Track spent points
+            existing_entry = next((sp for sp in spent_points if sp['payer'] == payer), None)
+            if existing_entry:
+                existing_entry['points'] -= points_to_deduct
+            else:
+                spent_points.append({"payer": payer, "points": -points_to_deduct})
+
 
         #Verify that all points are spent
         if points_to_spend > 0:
@@ -118,7 +129,7 @@ def spend_points():
         #Commit changes to DB
         db.session.commit()
 
-        return jsonify({"message": "Points spent successfully"}), 200
+        return jsonify(spent_points), 200
 
     except Exception as e:
         db.session.rollback()
