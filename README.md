@@ -12,7 +12,18 @@ This project is a Flask REST API used to keep track of and make transactions wit
 - `src/templates/index.html`: Frontend application to make API calls.
 - `src/static/styles.css`: Styling for HTML file.
 
+## Testing
+To test the project, first install dependencies in `requirements.txt`, and run:
+```bash
+python -m pytest
+```
+
 ## Installation + Running Project
+
+### First Steps:
+- Make sure you have Python 3.11 installed on your system.
+- Navigate to the project directory.
+
 ### To Run Locally:
 
 1. **Install Required Dependencies**:
