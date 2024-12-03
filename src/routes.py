@@ -98,10 +98,22 @@ def spend_points():
             available_points = transaction.points
             balance = Balance.query.filter_by(payer=payer).first()
 
+            #Check if payer exists in spent_points list
+            existing_entry = None
+            for i in range (len(spent_points)):
+                if spent_points[i]['payer'] == payer:
+                    existing_entry = spent_points[i]
+
             #Check case where points in transaction are negative
             if available_points < 0:
                 points_to_spend += abs(available_points)
                 balance.points += abs(available_points)
+
+                if existing_entry:
+                    existing_entry['points'] += abs(available_points)
+                else:
+                    spent_points.append({"payer": payer, "points": abs(available_points)})
+                
                 transaction.points = 0
                 continue
 
@@ -113,9 +125,8 @@ def spend_points():
             #Update the payer's balance in the balance table
             if balance:
                 balance.points -= points_to_deduct
-        
-            # Track spent points
-            existing_entry = next((sp for sp in spent_points if sp['payer'] == payer), None)
+
+            #Track spent points
             if existing_entry:
                 existing_entry['points'] -= points_to_deduct
             else:

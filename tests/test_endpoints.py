@@ -60,7 +60,7 @@ def test_spend_points(client):
     
     response = client.post('/spend', json={"points": 100}, headers = headers)
     assert response.status_code == 200
-    assert response.json["message"] == "Points spent successfully"
+    assert response.json == [{"payer": "DANNON", "points": -100}]
 
     
     #Check balances in the database
@@ -112,7 +112,11 @@ def test_provided_case(client):
     #2. Spend
     spend_response = client.post('/spend', json={ "points": 5000 }, headers = headers)
     assert spend_response.status_code == 200
-    assert spend_response.json["message"] == "Points spent successfully"
+    assert spend_response.json == [
+        { "payer": "DANNON", "points": -100 },
+        { "payer": "UNILEVER", "points": -200 },
+        { "payer": "MILLER COORS", "points": -4700 }
+    ]
 
     #3. Check Balances
     balance_response = client.get('/balance', headers = headers)
