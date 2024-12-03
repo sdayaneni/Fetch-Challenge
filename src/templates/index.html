@@ -70,7 +70,13 @@
             });
 
             const result = await response.json();
-            document.getElementById("add-result").innerText = JSON.stringify(result.message, null, 2);
+
+            if(result.message == undefined) {
+                document.getElementById("add-result").innerText = JSON.stringify("Error", null, 2);
+            }
+            else{
+                document.getElementById("add-result").innerText = JSON.stringify(result.message, null, 2);
+            }
         }
 
         async function spendPoints() {
@@ -88,7 +94,12 @@
             });
 
             const result = await response.json();
-            document.getElementById("spend-result").innerText = JSON.stringify(result.message, null, 2);
+            if(result.message == undefined) {
+                document.getElementById("spend-result").innerText = JSON.stringify("Error", null, 2);
+            }
+            else {
+                document.getElementById("spend-result").innerText = JSON.stringify(result.message, null, 2);
+            }
         }
 
         async function getBalance() {
